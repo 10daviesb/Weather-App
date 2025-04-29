@@ -2,9 +2,11 @@
 
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
+from PIL import Image, ImageTk
 import requests
 import json
 import os
+from io import BytesIO
 from dotenv import load_dotenv
 
 # --- Load Environment Variables ---
@@ -14,9 +16,10 @@ API_KEY = os.getenv("API_KEY")
 # --- Constants ---
 GEO_URL = "http://api.openweathermap.org/geo/1.0/direct"
 ONECALL_URL = "https://api.openweathermap.org/data/3.0/onecall"
+ICON_URL = "http://openweathermap.org/img/wn/{}@2x.png"
 SETTINGS_FILE = "settings.json"
 CITY_DATA_FILE = "city.list.json"
-COOLDOWN_TIME = 600  # 10 minutes in seconds
+COOLDOWN_TIME = 600
 
 # --- Global Variables ---
 countries = {}
@@ -25,8 +28,11 @@ country_code_map = {}
 cities_by_country = {}
 city_list = []
 cooldown_seconds_left = 0
+unit_preference = "metric"
+search_history = []
+dark_mode = False
+icon_image = None
 
-# --- Country Code to Name Mapping ---
 country_names = {
     "GB": "United Kingdom",
     "US": "United States",
@@ -90,7 +96,7 @@ def get_coordinates(city, country_code):
     return None, None
 
 def get_weather(lat, lon):
-    params = {"lat": lat, "lon": lon, "appid": API_KEY, "units": "metric"}
+    params = {"lat": lat, "lon": lon, "appid": API_KEY, "units": unit_preference}
     try:
         response = requests.get(ONECALL_URL, params=params)
         response.raise_for_status()
@@ -113,40 +119,98 @@ def emoji_for_description(description):
     return "🌈"
 
 def display_weather(data):
+    global icon_image
     if data:
         current = data.get("current", {})
         temp = round(current.get("temp", 0))
         feels_like = round(current.get("feels_like", 0))
         desc = current.get("weather", [{}])[0].get("description", "").capitalize()
+        icon = current.get("weather", [{}])[0].get("icon", "01d")
         humidity = current.get("humidity", 0)
         wind_speed = round(current.get("wind_speed", 0))
         emoji = emoji_for_description(desc)
 
+        unit_label = "°C" if unit_preference == "metric" else "°F"
+        speed_label = "m/s" if unit_preference == "metric" else "mph"
+
+        icon_url = ICON_URL.format(icon)
+        try:
+            response = requests.get(icon_url)
+            img_data = response.content
+            icon_img = Image.open(BytesIO(img_data)).resize((64, 64))
+            icon_image = ImageTk.PhotoImage(icon_img)
+            icon_label.config(image=icon_image)
+        except:
+            icon_label.config(image="")
+
         weather_label.config(
             text=(
                 f"{emoji} {desc}\n"
-                f"Temperature: {temp}°C\n"
-                f"Feels like: {feels_like}°C\n"
+                f"Temperature: {temp}{unit_label}\n"
+                f"Feels like: {feels_like}{unit_label}\n"
                 f"Humidity: {humidity}%\n"
-                f"Wind Speed: {wind_speed} m/s"
+                f"Wind Speed: {wind_speed} {speed_label}"
             )
         )
+        save_weather_cache(data)
     else:
-        weather_label.config(text="Could not fetch weather.")
+        cached = load_weather_cache()
+        if cached:
+            display_weather(cached)
+            weather_label.config(text=weather_label.cget("text") + "\n(Offline mode: showing cached data)")
+        else:
+            weather_label.config(text="Could not fetch weather.")
+
+def save_weather_cache(data):
+    with open("weather_cache.json", "w") as f:
+        json.dump(data, f)
+
+def load_weather_cache():
+    if os.path.exists("weather_cache.json"):
+        with open("weather_cache.json", "r") as f:
+            return json.load(f)
+    return None
 
 def save_default_city(country, city):
+    settings = {
+        "country": country,
+        "city": city,
+        "unit": unit_preference,
+        "dark_mode": dark_mode,
+        "search_history": search_history[-10:]
+    }
     with open(SETTINGS_FILE, "w") as f:
-        json.dump({"country": country, "city": city}, f)
+        json.dump(settings, f)
+
+def toggle_units():
+    global unit_preference
+    unit_preference = "imperial" if unit_preference == "metric" else "metric"
+    fetch_weather()
+
+def toggle_theme():
+    global dark_mode
+    dark_mode = not dark_mode
+    bg = "#2e2e2e" if dark_mode else "#f0f0f0"
+    fg = "#ffffff" if dark_mode else "#000000"
+    root.config(bg=bg)
+    for widget in root.winfo_children():
+        try:
+            widget.config(bg=bg, fg=fg)
+        except:
+            pass
 
 def fetch_weather():
     global cooldown_seconds_left
-
     country_label = country_box.get()
     city_name = city_box.get()
 
     if not country_label or not city_name:
         messagebox.showerror("Input Error", "Please select a country and city.")
         return
+
+    if city_name not in search_history:
+        search_history.append(city_name)
+        history_box["values"] = search_history[-10:]
 
     country_code = countries.get(country_label)
     lat, lon = get_coordinates(city_name, country_code)
@@ -158,7 +222,6 @@ def fetch_weather():
         display_weather(data)
         save_default_city(country_label, city_name)
         start_cooldown()
-
 def start_cooldown():
     global cooldown_seconds_left
     cooldown_seconds_left = COOLDOWN_TIME
@@ -194,11 +257,15 @@ def on_enter_key(event):
         city_box.set(city_box["values"][0])
 
 def load_default_city():
+    global unit_preference, dark_mode, search_history
     if os.path.exists(SETTINGS_FILE):
         with open(SETTINGS_FILE, "r") as f:
             settings = json.load(f)
             country_box.set(settings.get("country", ""))
             city_box.set(settings.get("city", ""))
+            unit_preference = settings.get("unit", "metric")
+            dark_mode = settings.get("dark_mode", False)
+            search_history.extend(settings.get("search_history", []))
 
 def change_default_city():
     new_country = simpledialog.askstring("Change Default", "Enter country (with emoji):")
@@ -215,7 +282,7 @@ def change_default_city():
 # --- GUI Setup ---
 root = tk.Tk()
 root.title("Weather App")
-root.geometry("400x400")
+root.geometry("420x600")
 root.resizable(False, False)
 
 load_city_data()
@@ -223,6 +290,8 @@ load_city_data()
 menu_bar = tk.Menu(root)
 settings_menu = tk.Menu(menu_bar, tearoff=0)
 settings_menu.add_command(label="Change Default City", command=change_default_city)
+settings_menu.add_command(label="Toggle °C/°F", command=toggle_units)
+settings_menu.add_command(label="Toggle Dark Mode", command=toggle_theme)
 menu_bar.add_cascade(label="Settings", menu=settings_menu)
 root.config(menu=menu_bar)
 
@@ -241,16 +310,28 @@ city_box.pack(pady=5)
 city_box.bind("<KeyRelease>", lambda event: filter_city_list())
 city_box.bind("<Return>", on_enter_key)
 
+history_label = tk.Label(root, text="Search History:")
+history_label.pack(pady=(10, 0))
+
+history_box = ttk.Combobox(root, values=search_history)
+history_box.pack(pady=5)
+history_box.bind("<<ComboboxSelected>>", lambda e: city_box.set(history_box.get()))
+
 fetch_button = tk.Button(root, text="Get Weather", command=fetch_weather)
 fetch_button.pack(pady=10)
 
 timer_label = tk.Label(root, text="", font=("Helvetica", 10))
 timer_label.pack(pady=5)
 
+icon_label = tk.Label(root)
+icon_label.pack(pady=5)
+
 weather_label = tk.Label(root, text="", font=("Helvetica", 14))
 weather_label.pack(pady=20)
 
 load_default_city()
+if dark_mode:
+    toggle_theme()
 
 # --- Main ---
 root.mainloop()
