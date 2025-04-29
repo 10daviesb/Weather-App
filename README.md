@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-Active-green)
-![Last Commit](https://img.shields.io/github/last-commit/10daviesb/weather-app)
+![Last Commit](https://img.shields.io/github/last-commit/10daviesb/Weather-App)
 
 A beautiful, lightweight desktop app that shows the current weather for any city worldwide.  
 Built with Python, Tkinter GUI, and OpenWeatherMap API.
