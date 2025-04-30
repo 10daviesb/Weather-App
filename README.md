@@ -12,15 +12,15 @@ Built with Python, Tkinter GUI, and OpenWeatherMap API.
 
 ## Table of Contents
 
-- [Features](#features)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#🚀-Getting-Started)
-- [Running the App](#Running-the-App)
-- [Built With](#Built-With)
-- [Screenshots](#Screenshots)
-- [Contact](#contact)
-- [License](#license)
+- [✨ Features](#✨-features)
+- [🛠️ Architecture](#🛠️-architecture)
+- [💻 Tech Stack](#💻-tech-stack)
+- [🚀 Getting Started](#🚀-getting-started)
+- [🖥️ Running the App](#🖥️-running-the-app)
+- [📦 Built With](#📦-built-with)
+- [📷 Screenshots](#📷-screenshots)
+- [🙌 Credits](#🙌-credits)
+- [📄 License](#📄-license)
 
 ---
 
@@ -35,16 +35,18 @@ Built with Python, Tkinter GUI, and OpenWeatherMap API.
   - Humidity
   - Wind Speed
 - 🔄 Refresh button with a **10-minute cooldown** and live countdown timer
-- 🔧 Settings menu to **change the default city** (remembers across app restarts)
+- 🔧 Settings menu to **toggle temperature units** and **dark mode**
 - ⚡ Loads the OpenWeatherMap city list dynamically at startup
 - 🛡️ API key hidden using `.env` file for security
-- 🌐 **Offline Mode**: Cache the last successful weather fetch for offline viewing.
-- 🗂️ **Search History**: Quickly access recently viewed cities.
+- 🌐 **Offline Mode**: Cache the last successful weather fetch for offline viewing
+- 🗂️ **Search History**: Quickly access recently viewed cities
+- 🌐 **Multi-language Support**: Switch between English and Dutch dynamically
 
 ---
 
-## Architecture
+## 🛠️ Architecture
 
+The project is organized as follows:
 ```
 weather_app/              # Project root
 ├── city.list.json        # Bulk city data for auto-suggestions
@@ -55,13 +57,15 @@ weather_app/              # Project root
 └── requirements.txt      # Python dependencies
 ```
 
-- **weather\_app.py** contains modular functions for data loading, API interaction, UI rendering, and state management.
-- **city.list.json** is dynamically loaded at runtime to populate country and city selectors.
-- **.env** secures your API\_KEY via the `python-dotenv` package.
+### Key Components
+
+- **`weather_app.py`**: Contains modular functions for data loading, API interaction, UI rendering, and state management.
+- **`city.list.json`**: Dynamically loaded at runtime to populate country and city selectors.
+- **`.env`**: Secures your API key via the `python-dotenv` package.
 
 ---
 
-## Tech Stack
+## 💻 Tech Stack
 
 - **Language:** Python 3.8+
 - **GUI Framework:** Tkinter
