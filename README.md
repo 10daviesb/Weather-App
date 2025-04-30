@@ -15,7 +15,7 @@ Built with Python, Tkinter GUI, and OpenWeatherMap API.
 - [Features](#features)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
-- [Getting Started](#Getting-Started)
+- [Getting Started](#🚀-Getting-Started)
 - [Running the App](#Running-the-App)
 - [Built With](#Built-With)
 - [Screenshots](#Screenshots)
