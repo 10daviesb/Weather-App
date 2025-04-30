@@ -134,7 +134,7 @@ def change_default_city():
 
     top = Toplevel(root)
     top.title("Change Default City")
-    top.geometry("300x200")
+    top.geometry("350x200")
 
     tk.Label(top, text="Select Country:").pack(pady=(10, 0))
     country_dropdown = ttk.Combobox(top, values=countries_list)
@@ -416,7 +416,7 @@ def load_default_city():
             search_history.extend(settings.get("search_history", []))
 
 def change_default_city():
-    new_country = simpledialog.askstring("Change Default", "Enter country (with emoji):")
+    new_country = simpledialog.askstring("Change Default", "Enter country:")
     if new_country and new_country in countries:
         new_city = simpledialog.askstring("Change Default", "Enter city:")
         if new_city:
@@ -456,9 +456,8 @@ def set_language(lang_code):
     city_label.config(text=translations[language]["select_city"])
     fetch_button.config(text=translations[language]["get_weather"])
     history_label.config(text=translations[language]["search_history"])
-    settings_menu.entryconfig(0, label=translations[language]["change_default_city"])
-    settings_menu.entryconfig(1, label=translations[language]["toggle_temp"])
-    settings_menu.entryconfig(2, label=translations[language]["toggle_dark_mode"])
+    settings_menu.entryconfig(0, label=translations[language]["toggle_temp"])
+    settings_menu.entryconfig(1, label=translations[language]["toggle_dark_mode"])
     messagebox.showinfo("Language Changed", translations[language]["language_changed"])
 
     # Refresh weather data without clearing it
@@ -467,6 +466,14 @@ def set_language(lang_code):
         display_weather(cached_data)  # Keep the current weather data displayed
     else:
         fetch_weather()  # Fetch new data if no cache exists
+
+def update_default_button_state(*args):
+    """Enable or disable the 'Set Default' button based on the input fields."""
+    print(f"Country: {country_box.get()}, City: {city_box.get()}")  # Debugging
+    if country_box.get() and city_box.get():
+        set_default_button.config(state="normal")
+    else:
+        set_default_button.config(state="disabled")
 
 # --- GUI Setup ---
 root = tk.Tk()
@@ -478,7 +485,6 @@ load_city_data()
 
 menu_bar = tk.Menu(root)
 settings_menu = tk.Menu(menu_bar, tearoff=0)
-settings_menu.add_command(label=translations[language]["change_default_city"], command=change_default_city)
 settings_menu.add_command(label=translations[language]["toggle_temp"], command=toggle_units)
 settings_menu.add_command(label=translations[language]["toggle_dark_mode"], command=toggle_theme)
 menu_bar.add_cascade(label="Settings", menu=settings_menu)
@@ -490,16 +496,17 @@ menu_bar.add_cascade(label="Language", menu=language_menu)
 
 root.config(menu=menu_bar)
 
+# Define the country, city, and history boxes first
 country_label = tk.Label(root, text=translations[language]["select_country"])
 country_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
-country_box = ttk.Combobox(root, values=countries_list)
-country_box.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
-country_box.bind("<<ComboboxSelected>>", update_city_list)
 
 history_label = tk.Label(root, text=translations[language]["search_history"])
 history_label.grid(row=7, column=0, padx=10, pady=5, sticky="w")
-history_box = ttk.Combobox(root)
+history_box = ttk.Combobox(root, values=search_history, state="readonly")
 history_box.grid(row=7, column=1, padx=10, pady=5, sticky="ew")
+country_box = ttk.Combobox(root, values=countries_list)
+country_box.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
+country_box.bind("<<ComboboxSelected>>", update_city_list)
 
 city_label = tk.Label(root, text=translations[language]["select_city"])
 city_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
@@ -510,6 +517,9 @@ city_box.bind("<Return>", on_enter_key)
 
 fetch_button = tk.Button(root, text=translations[language]["get_weather"], command=fetch_weather)
 fetch_button.grid(row=2, column=0, columnspan=2, pady=10)
+
+set_default_button = tk.Button(root, text="Set Default", command=change_default_city)
+set_default_button.grid(row=2, column=1, padx=10, pady=10, sticky="e")
 
 timer_label = tk.Label(root, text="", font=("Helvetica", 10))
 timer_label.grid(row=3, column=0, columnspan=2, pady=5)
