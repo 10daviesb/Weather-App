@@ -10,6 +10,20 @@ Built with Python, Tkinter GUI, and OpenWeatherMap API.
 
 ---
 
+## Table of Contents
+
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#Getting-Started)
+- [Running the App](#Running-the-App)
+- [Built With](#Built-With)
+- [Screenshots](#Screenshots)
+- [Contact](#contact)
+- [License](#license)
+
+---
+
 ## ✨ Features
 
 - 🌎 Select a country (with flag emojis!)
@@ -24,6 +38,37 @@ Built with Python, Tkinter GUI, and OpenWeatherMap API.
 - 🔧 Settings menu to **change the default city** (remembers across app restarts)
 - ⚡ Loads the OpenWeatherMap city list dynamically at startup
 - 🛡️ API key hidden using `.env` file for security
+- 🌐 **Offline Mode**: Cache the last successful weather fetch for offline viewing.
+- 🗂️ **Search History**: Quickly access recently viewed cities.
+
+---
+
+## Architecture
+
+```
+weather_app/              # Project root
+├── city.list.json        # Bulk city data for auto-suggestions
+├── weather_app.py        # Main application script (GUI + logic)
+├── .env                  # Stores your OpenWeatherMap API key
+├── weather_cache.json    # Cached weather data for offline mode
+├── settings.json         # User preferences (default city, units, theme)
+└── requirements.txt      # Python dependencies
+```
+
+- **weather\_app.py** contains modular functions for data loading, API interaction, UI rendering, and state management.
+- **city.list.json** is dynamically loaded at runtime to populate country and city selectors.
+- **.env** secures your API\_KEY via the `python-dotenv` package.
+
+---
+
+## Tech Stack
+
+- **Language:** Python 3.8+
+- **GUI Framework:** Tkinter
+- **HTTP Client:** `requests`
+- **Environment Management:** `python-dotenv`
+- **Image Handling:** `Pillow`
+- **Data Sources:** OpenWeatherMap API
 
 ---
 
@@ -87,14 +132,6 @@ See the [LICENSE](LICENSE) file for details.
 ## 📷 Screenshots
 
 *Soon™*
-
----
-
-## 🛠️ Future Improvements
-
-- Add light/dark theme toggle
-- Improve search with fuzzy matching
-- Package as a standalone executable (.exe)
 
 ---
 
