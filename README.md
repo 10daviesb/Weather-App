@@ -10,20 +10,6 @@ Built with Python, Tkinter GUI, and OpenWeatherMap API.
 
 ---
 
-## Table of Contents
-
-- [✨ Features](#features)
-- [🛠️ Architecture](#architecture)
-- [💻 Tech Stack](#tech-stack)
-- [🚀 Getting Started](#getting-started)
-- [🖥️ Running the App](#running-the-app)
-- [📦 Built With](#built-with)
-- [📷 Screenshots](#screenshots)
-- [🙌 Credits](#credits)
-- [📄 License](#license)
-
----
-
 ## ✨ Features
 
 - 🌎 Select a country (with flag emojis!)
